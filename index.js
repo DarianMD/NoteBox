@@ -5,7 +5,7 @@ const file = fs.createWriteStream("filmaffinity_response.html");
 
 
 
-https.get("https://www.filmaffinity.com/es/userratings.php?user_id=8536085", function(res) {
+https.get("https://www.filmaffinity.com/es/userratings.php?user_id=", function(res) {
     console.log(res.statusCode);
     res.setEncoding('utf8');
     let rawData = '';
