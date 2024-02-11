@@ -2,13 +2,13 @@ const https = require('https');
 const fs = require('fs');
 const cheerio = require('cheerio');
 
-let id = ''; // Inicializa el ID
-let page = 1; // Inicializa la página
+let url = ''; // Inicializa el ID
+let page = null; // Inicializa la página
 let status = 200; // Inicializa el estado
 
 function fetchData() {
     return new Promise((resolve, reject) => {
-        https.get("https://www.filmaffinity.com/es/userratings.php?user_id=" + id + '&p='+ page + '&orderby=4', function(res) {
+        https.get(url, function(res) {
             console.log(res.statusCode);
             status = res.statusCode;
             if (res.statusCode === 404) {
@@ -19,7 +19,8 @@ function fetchData() {
         
             res.setEncoding('utf8');
             let rawData = '';
-            const file = fs.createWriteStream('./tmp/filmaffinity_response'+ page +'.html'); // Crea un nuevo archivo
+            
+            const file = fs.createWriteStream('./tmp/imdb_response.html'); // Crea un nuevo archivo
             res.on('data', function(chunk) {
                 rawData += chunk;
                 file.write(chunk); // Escribir los datos en el archivo
@@ -32,13 +33,13 @@ function fetchData() {
                 const $ = cheerio.load(rawData);
                 let moviesData = [];
 
-                for (let i = 0; i < $('.user-ratings-movie').length; i++) {
+                for (let i = 0; i < $('.lister-item').length; i++) {
                     
                     // Obtiene el título de la película en el índice actual
-                    const title = $('.movie-card').eq(i).find('.mc-title a').text().trim();
+                    const title = $('.lister-item-header').eq(i).find('a').text().trim();
 
                     // Obtiene la nota de la película en el índice actual
-                    const rating = $('.user-ratings-movie-rating').eq(i).find('.ur-mr-rat').text().trim();
+                    const rating = $('.lister-item-content div').eq(i).find('.ipl-rating-star__rating').text().trim();
             
                     // Agrega el par nombre-nota al array moviesData
                     moviesData.push([title, rating]);
@@ -63,17 +64,15 @@ function fetchData() {
 
 
                 
-                let page_1 = page-1;
-                fs.unlink('./tmp/filmaffinity_response'+page_1+'.html', (error) => {
+                fs.unlink('./tmp/imdb_response.html', (error) => {
                     if (error) {
                         console.error('Error al eliminar el archivo:', error);
                         return;
                     }
                     console.log('El archivo ha sido eliminado exitosamente.');
                 });
-            });
 
-            page++;
+            });
 
         }).on('error', function(err) {
             reject(err); // Rechaza la promesa en caso de error
@@ -102,6 +101,7 @@ function fetchPages() {
 }
 
 fetchPages(); // Inicia la obtención de páginas
+
 
 
 
