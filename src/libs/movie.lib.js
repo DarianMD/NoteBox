@@ -2,6 +2,7 @@ import * as url from 'url';
 import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as https from 'https';
+import movieSchema from '../models/movie.model.js'
 
 
 export function urlHost(urlWeb){
@@ -18,14 +19,16 @@ export default function fetchData(urlWeb, user_frontID) {
 
         let dominio = url.parse(urlWeb, true);
         let httpUrl, user_id, page;
+        let host = urlHost(urlWeb)
+        
 
         
-        switch (urlHost(urlWeb)){
+        switch (host){
             case "filmaffinity":
                 page = dominio.query.p;
                 dominio.query.p++;
                 user_id = dominio.query.user_id;
-                httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ dominio.query.p;
+                httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ page
                 console.log(httpUrl);
                 break;
             case "imdb":
@@ -55,9 +58,30 @@ export default function fetchData(urlWeb, user_frontID) {
                 file.write(chunk); // Escribir los datos en el archivo
             });
 
+
             res.on('end', function() {
                 file.end(); // Cerrar el archivo cuando se complete la respuesta
+                const htmlData = cheerio.load(rawData);
+                let movieQuery = hostHtmlQuery(host);
+
+
+                for (let i = 0; i < /*htmlData(movieQuery[0].length*/ 1; i++) {                    
+                    let title = htmlData(movieQuery[1]).eq(i).find(movieQuery[2]).text().trim();
+                    let rating = htmlData(movieQuery[3]).eq(i).find(movieQuery[4]).text().trim();
+
+                    var movie = new movieSchema({
+                        user_idM: user_id,
+                        name: title,
+                        rating: rating
+                    });
+        
+                    movie.save();
+                }
+
             });
+
+            resolve();
+            return;
             
 
 
@@ -65,4 +89,17 @@ export default function fetchData(urlWeb, user_frontID) {
             reject(err); // Rechaza la promesa en caso de error
         });
     });
+}
+
+
+export function hostHtmlQuery(host){
+
+    let queryCheerio = [];
+    switch (host){
+        case "filmaffinity":
+            queryCheerio = ['.user-ratings-movie','.movie-card','.mc-title a', '.user-ratings-movie-rating', '.ur-mr-rat'];
+        break;
+    }   
+
+    return queryCheerio;
 }

@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
 
 const movieSchema = new mongoose.Schema({
+    user_idM:{
+        type: String,
+    },
     name: {
         type: String,
-        unique: true
     },
     rating: {
-        type: Number
+        type: Number,
     }
    
 })
