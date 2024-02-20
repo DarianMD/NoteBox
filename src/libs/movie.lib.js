@@ -40,6 +40,7 @@ export function baseRatingHost(host, rating){
     
 }
 
+
 export default function fetchData(urlWeb, user_frontID) {
 
     return new Promise((resolve, reject) => {
@@ -56,7 +57,6 @@ export default function fetchData(urlWeb, user_frontID) {
                 dominio.query.p++;
                 user_id = dominio.query.user_id;
                 httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ page
-                console.log(httpUrl);
                 break;
             case "imdb":
                 console.log("Es imdb");
@@ -99,25 +99,29 @@ export default function fetchData(urlWeb, user_frontID) {
                     var movie = new movieSchema({
                         user_idM: user_id,
                         name: title,
-                        rating: rating,
+                        rating: baseRatingHost(host, rating),
                         typeMul: 1,
                     });
-        
-                    movie.save();
+                    
+                    console.log(title);
+                    //movie.save();
                 }
+
+                
+                fs.unlink('./src/tmp/'+urlHost(urlWeb) + '_' + user_id + '_' + page + '.html', (error) => {
+                    if (error) {
+                        console.error('Error al eliminar el archivo:', error);
+                        return;
+                    }
+                    console.log('El archivo ha sido eliminado exitosamente.');
+                });
+                
+                return;
 
             });
-            
 
-            /*fs.unlink('./src/tmp/'+urlHost(urlWeb) + '_' + user_id + '_' + page + '.html', (error) => {
-                if (error) {
-                    console.error('Error al eliminar el archivo:', error);
-                    return;
-                }
-                console.log('El archivo ha sido eliminado exitosamente.');
-            });*/
-
-            resolve()
+        
+            resolve();
             return;
             
 
