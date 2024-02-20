@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as https from 'https';
 import movieSchema from '../models/movie.model.js'
+import { error } from 'console';
 
 
 export function urlHost(urlWeb){
@@ -11,6 +12,32 @@ export function urlHost(urlWeb){
     let host = dominio.host;
     dominio = host.replace(/^www\.|\.com$/gi, '');
     return dominio;
+}
+
+
+export function hostHtmlQuery(host){
+
+    let queryCheerio = [];
+    switch (host){
+        case "filmaffinity":
+            queryCheerio = ['.user-ratings-movie','.movie-card','.mc-title a', '.user-ratings-movie-rating', '.ur-mr-rat'];
+        break;
+    }   
+
+    return queryCheerio;
+}
+
+
+export function baseRatingHost(host, rating){
+
+    let retRating;
+    switch (host){
+        case "letterboxd":
+            retRating = ((string.match(/★/g) || []).length) * 2;
+            retRating += ((string.match(/½/g) || []).length);
+            break;
+    }
+    
 }
 
 export default function fetchData(urlWeb, user_frontID) {
@@ -72,15 +99,25 @@ export default function fetchData(urlWeb, user_frontID) {
                     var movie = new movieSchema({
                         user_idM: user_id,
                         name: title,
-                        rating: rating
+                        rating: rating,
+                        typeMul: 1,
                     });
         
                     movie.save();
                 }
 
             });
+            
 
-            resolve();
+            /*fs.unlink('./src/tmp/'+urlHost(urlWeb) + '_' + user_id + '_' + page + '.html', (error) => {
+                if (error) {
+                    console.error('Error al eliminar el archivo:', error);
+                    return;
+                }
+                console.log('El archivo ha sido eliminado exitosamente.');
+            });*/
+
+            resolve()
             return;
             
 
@@ -92,14 +129,3 @@ export default function fetchData(urlWeb, user_frontID) {
 }
 
 
-export function hostHtmlQuery(host){
-
-    let queryCheerio = [];
-    switch (host){
-        case "filmaffinity":
-            queryCheerio = ['.user-ratings-movie','.movie-card','.mc-title a', '.user-ratings-movie-rating', '.ur-mr-rat'];
-        break;
-    }   
-
-    return queryCheerio;
-}

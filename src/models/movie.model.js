@@ -9,6 +9,9 @@ const movieSchema = new mongoose.Schema({
     },
     rating: {
         type: Number,
+    },
+    typeMul: {
+        type: String
     }
    
 })
