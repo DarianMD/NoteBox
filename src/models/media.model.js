@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const movieSchema = new mongoose.Schema({
+const mediaSchema = new mongoose.Schema({
     user_idM:{
         type: String,
     },
@@ -16,4 +16,4 @@ const movieSchema = new mongoose.Schema({
    
 })
 
-export default mongoose.model('Movie', movieSchema)
+export default mongoose.model('Movie', mediaSchema)

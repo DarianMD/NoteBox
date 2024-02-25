@@ -2,11 +2,20 @@ import * as url from 'url';
 import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as https from 'https';
-import movieSchema from '../models/movie.model.js'
-import { error } from 'console';
+import mediaSchema from '../models/media.model.js'
+
+export const HOST = {
+    filmaffinity: 'filmaffinity',
+    imdb: 'imdb',
+    letterboxd: 'letterboxd',
+    rateyourmusic: 'rateyourmusic',
+    goodreads: 'goodreads'
+
+}
 
 
-export function urlHost(urlWeb){
+
+function urlHost(urlWeb){
 
     let dominio = url.parse(urlWeb, true);
     let host = dominio.host;
@@ -15,7 +24,7 @@ export function urlHost(urlWeb){
 }
 
 
-export function hostHtmlQuery(host){
+function hostHtmlQuery(host){
 
     let queryCheerio = [];
     switch (host){
@@ -28,17 +37,37 @@ export function hostHtmlQuery(host){
 }
 
 
-export function baseRatingHost(host, rating){
+function baseRatingHost(host, rating){
 
     let retRating;
     switch (host){
         case "letterboxd":
-            retRating = ((string.match(/★/g) || []).length) * 2;
-            retRating += ((string.match(/½/g) || []).length);
+            retRating = ((rating.match(/★/g) || []).length) * 2;
+            retRating += ((rating.match(/½/g) || []).length);
+            break;
+        case "filmaffinity":
+            retRating = rating;
             break;
     }
     
+
+    return retRating;
 }
+
+function baseTypeHost(host){
+    let type;
+
+    switch (host){
+        case "filmaffinity":
+        type = "Movie"
+        break;
+        case "rateyourmusic":
+        type = "Music"
+    }
+
+    return type;
+}
+
 
 
 export default function fetchData(urlWeb, user_frontID) {
@@ -48,11 +77,10 @@ export default function fetchData(urlWeb, user_frontID) {
         let dominio = url.parse(urlWeb, true);
         let httpUrl, user_id, page;
         let host = urlHost(urlWeb)
-        
-
+    
         
         switch (host){
-            case "filmaffinity":
+            case HOST.filmaffinity:
                 page = dominio.query.p;
                 dominio.query.p++;
                 user_id = dominio.query.user_id;
@@ -89,22 +117,22 @@ export default function fetchData(urlWeb, user_frontID) {
             res.on('end', function() {
                 file.end(); // Cerrar el archivo cuando se complete la respuesta
                 const htmlData = cheerio.load(rawData);
-                let movieQuery = hostHtmlQuery(host);
+                let mediaQuery = hostHtmlQuery(host);
 
 
-                for (let i = 0; i < /*htmlData(movieQuery[0].length*/ 1; i++) {                    
-                    let title = htmlData(movieQuery[1]).eq(i).find(movieQuery[2]).text().trim();
-                    let rating = htmlData(movieQuery[3]).eq(i).find(movieQuery[4]).text().trim();
+                for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 1; i++) {                    
+                    let title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim();
+                    let rating = htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim();
 
-                    var movie = new movieSchema({
+                    var media = new mediaSchema({
                         user_idM: user_id,
                         name: title,
                         rating: baseRatingHost(host, rating),
-                        typeMul: 1,
+                        typeMul: baseTypeHost(host),
                     });
                     
                     console.log(title);
-                    //movie.save();
+                    //media.save();
                 }
 
                 
