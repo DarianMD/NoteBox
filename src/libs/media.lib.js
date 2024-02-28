@@ -28,8 +28,11 @@ function hostHtmlQuery(host){
 
     let queryCheerio = [];
     switch (host){
-        case "filmaffinity":
+        case HOST.filmaffinity:
             queryCheerio = ['.user-ratings-movie','.movie-card','.mc-title a', '.user-ratings-movie-rating', '.ur-mr-rat'];
+        break;
+        case HOST.imdb:
+            queryCheerio = ['.lister-item mode-detail', '.lister-item-header','a', '.ipl-rating-star .ipl-rating-interactive__star','.ipl-rating-star__rating span'];
         break;
     }   
 
@@ -41,11 +44,11 @@ function baseRatingHost(host, rating){
 
     let retRating;
     switch (host){
-        case "letterboxd":
+        case HOST.letterboxd:
             retRating = ((rating.match(/★/g) || []).length) * 2;
             retRating += ((rating.match(/½/g) || []).length);
             break;
-        case "filmaffinity":
+        case HOST.filmaffinity:
             retRating = rating;
             break;
     }
@@ -58,10 +61,10 @@ function baseTypeHost(host){
     let type;
 
     switch (host){
-        case "filmaffinity":
+        case HOST.filmaffinity:
         type = "Movie"
         break;
-        case "rateyourmusic":
+        case HOST.rateyourmusic:
         type = "Music"
     }
 
@@ -81,15 +84,21 @@ export default function fetchData(urlWeb, user_frontID) {
         
         switch (host){
             case HOST.filmaffinity:
+                if(dominio.query.p == null && page == null){
+                    page = 1;
+                }
+                else{
                 page = dominio.query.p;
+                }
                 dominio.query.p++;
                 user_id = dominio.query.user_id;
                 httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ page
                 break;
-            case "imdb":
-                console.log("Es imdb");
+            case HOST.imdb:
+                dominio.pathname = dominio.pathname.replace('ratings','');
+                httpUrl = 'https://www.imdb.com/'+ dominio.pathname +'/ratings';
                 break;
-             case "letterboxd":
+             case HOST.letterboxd:
                 console.log("Es letterboxd");
                 break;               
         }
@@ -120,7 +129,7 @@ export default function fetchData(urlWeb, user_frontID) {
                 let mediaQuery = hostHtmlQuery(host);
 
 
-                for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 1; i++) {                    
+                for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 3; i++) {                    
                     let title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim();
                     let rating = htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim();
 
@@ -131,7 +140,7 @@ export default function fetchData(urlWeb, user_frontID) {
                         typeMul: baseTypeHost(host),
                     });
                     
-                    console.log(title);
+                    console.log(title, rating);
                     //media.save();
                 }
 
