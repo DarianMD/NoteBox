@@ -146,17 +146,10 @@ export default function fetchData(urlWeb, user_frontID) {
 
                 for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 3; i++) {
                     
-                    if(titleAtribute == 'find'){
-                         title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim();
+                    title = titleAtribute == 'find' ? htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim() : htmlData(mediaQuery[1]).eq(i).attr('alt');
 
-                    }
-                    else if(titleAtribute == 'attr'){
-                        console.log('hola');
-                         title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).attr('alt');
-                    }
+                    rating = ratingAtribute == 'find' ? htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim() : htmlData(mediaQuery[3]).eq(i).attr('alt');
 
-
-                        rating = htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim();
 
                     var media = new mediaSchema({
                         user_idM: user_id,
@@ -193,5 +186,4 @@ export default function fetchData(urlWeb, user_frontID) {
         });
     });
 }
-
 
