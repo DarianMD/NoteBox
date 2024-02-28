@@ -146,9 +146,9 @@ export default function fetchData(urlWeb, user_frontID) {
 
                 for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 3; i++) {
                     
-                    title = titleAtribute == 'find' ? htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim() : htmlData(mediaQuery[1]).eq(i).attr('alt');
+                    title = titleAtribute == 'find' ? htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim() : htmlData(mediaQuery[1]).eq(i).attr(mediaQuery[2]);
 
-                    rating = ratingAtribute == 'find' ? htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim() : htmlData(mediaQuery[3]).eq(i).attr('alt');
+                    rating = ratingAtribute == 'find' ? htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim() : htmlData(mediaQuery[3]).eq(i).attr(mediaQuery[2]);
 
 
                     var media = new mediaSchema({
