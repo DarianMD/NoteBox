@@ -32,7 +32,10 @@ function hostHtmlQuery(host){
             queryCheerio = ['.user-ratings-movie','.movie-card','.mc-title a', '.user-ratings-movie-rating', '.ur-mr-rat'];
         break;
         case HOST.imdb:
-            queryCheerio = ['.lister-item mode-detail', '.lister-item-header','a', '.ipl-rating-star .ipl-rating-interactive__star','.ipl-rating-star__rating span'];
+            queryCheerio = ['.lister-item mode-detail', '.lister-item-header','a', '.ipl-rating-widget','.ipl-rating-star__rating'];
+        break;
+        case HOST.letterboxd:
+            queryCheerio = ['.poster-container', '.image','alt', '.poster-viewingdata','.rating'];
         break;
     }   
 
@@ -79,8 +82,10 @@ export default function fetchData(urlWeb, user_frontID) {
 
         let dominio = url.parse(urlWeb, true);
         let httpUrl, user_id, page;
-        let host = urlHost(urlWeb)
+        let host = urlHost(urlWeb);
     
+        let titleAtribute;
+        let ratingAtribute;
         
         switch (host){
             case HOST.filmaffinity:
@@ -93,13 +98,23 @@ export default function fetchData(urlWeb, user_frontID) {
                 dominio.query.p++;
                 user_id = dominio.query.user_id;
                 httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ page
+                titleAtribute = "find";
+                ratingAtribute = "find"
+
                 break;
             case HOST.imdb:
                 dominio.pathname = dominio.pathname.replace('ratings','');
                 httpUrl = 'https://www.imdb.com/'+ dominio.pathname +'/ratings';
+                titleAtribute = "find";
+                ratingAtribute = "find"
+
                 break;
              case HOST.letterboxd:
-                console.log("Es letterboxd");
+                dominio.pathname = dominio.pathname.replace('films/','');
+                httpUrl = 'https://letterboxd.com' + dominio.pathname + 'films/';
+                titleAtribute = "attr";
+                ratingAtribute = "find"
+
                 break;               
         }
         
@@ -127,11 +142,21 @@ export default function fetchData(urlWeb, user_frontID) {
                 file.end(); // Cerrar el archivo cuando se complete la respuesta
                 const htmlData = cheerio.load(rawData);
                 let mediaQuery = hostHtmlQuery(host);
+                let title, rating;
+
+                for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 3; i++) {
+                    
+                    if(titleAtribute == 'find'){
+                         title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim();
+
+                    }
+                    else if(titleAtribute == 'attr'){
+                        console.log('hola');
+                         title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).attr('alt');
+                    }
 
 
-                for (let i = 0; i < /*htmlData(mediaQuery[0].length*/ 3; i++) {                    
-                    let title = htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim();
-                    let rating = htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim();
+                        rating = htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim();
 
                     var media = new mediaSchema({
                         user_idM: user_id,
@@ -140,7 +165,7 @@ export default function fetchData(urlWeb, user_frontID) {
                         typeMul: baseTypeHost(host),
                     });
                     
-                    console.log(title, rating);
+                    console.log(title, baseRatingHost(host, rating));
                     //media.save();
                 }
 
