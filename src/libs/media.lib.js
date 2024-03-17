@@ -5,14 +5,16 @@ import * as https from 'https';
 import * as axios from 'axios';
 
 import mediaSchema from '../models/media.model.js'
+import { type } from 'os';
 
 export const HOST_ENUM = {
     filmaffinity:{hostname: 'filmaffinity', typeMedia: 'Movie', multiPage: 'yes', titleAtribute: 'Find',ratingAtribute: 'Find'},
     imdb:{host: 'imdb', typeMedia: 'Movie', multiPage: 'no', titleAtribute: 'Find',ratingAtribute: 'Find'},
     letterboxd:{host: 'letterboxd', typeMedia: 'Movie', multiPage: 'yes', titleAtribute: 'Atribute',ratingAtribute: 'Find'},
-    rateyourmusic:{host: 'rateyourmusic', typeMedia: 'Music', multiPage: 'yes', titleAtribute: 'Find',ratingAtribute: 'Find'},
-    goodreads:{host: 'goodreads', typeMedia: 'Book', multiPage: 'yes', titleAtribute: 'Find',ratingAtribute: 'Find'},
+    rateyourmusic:{host: 'rateyourmusic', typeMedia: 'Music', multiPage: 'yes', titleAtribute: 'find',ratingAtribute: 'Find'},
+    goodreads:{host: 'goodreads', typeMedia: 'Book', multiPage: 'yes', titleAtribute: 'find',ratingAtribute: 'find'},
 };
+
 
 
 
@@ -66,16 +68,11 @@ function baseRatingHost(host, rating){
 }
 
 
-export async function fetchData(domino, urlWeb, fileRoute, user_id, hostData, page, user_frontID) {
+export function fetchData(host,httpUrl, fileRoute, titleAtribute, ratingAtribute, userID, typeMedia) {
 
     return new Promise((resolve, reject) => {
 
-        let host = urlHost(urlWeb);
-
-
-        https.get(urlWeb, function(res) {
-
-            console.log(res.statusCode);
+        https.get(httpUrl, function(res) {
 
             if (res.statusCode === 404) {
                 console.log("Error 404: No se encontró la página");
@@ -86,7 +83,6 @@ export async function fetchData(domino, urlWeb, fileRoute, user_id, hostData, pa
             res.setEncoding('utf8');
             let rawData = '';
             let file = fs.createWriteStream(fileRoute)// Crea un nuevo archivo
-
 
             res.on('data', function(chunk) {
                 rawData += chunk;
@@ -101,18 +97,20 @@ export async function fetchData(domino, urlWeb, fileRoute, user_id, hostData, pa
                 let title, rating;
 
 
-                for (let i = 0; i < 6 /*htmlData(mediaQuery[0].length)*/; i++) {
-                    
-                    title = HOST_ENUM.filmaffinity.titleAtribute == 'Find' ? htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim() : htmlData(mediaQuery[1]).eq(i).attr(mediaQuery[2]);
 
-                    rating = HOST_ENUM.filmaffinity.ratingAtribute == 'Find' ? htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim() : htmlData(mediaQuery[3]).eq(i).attr(mediaQuery[2]);
+
+                for (let i = 0; i < htmlData(mediaQuery[0]).length; i++) {
+                    
+                    title = titleAtribute == 'Find' ? htmlData(mediaQuery[1]).eq(i).find(mediaQuery[2]).text().trim() : htmlData(mediaQuery[1]).eq(i).attr(mediaQuery[2]);
+
+                    rating = ratingAtribute == 'Find' ? htmlData(mediaQuery[3]).eq(i).find(mediaQuery[4]).text().trim() : htmlData(mediaQuery[3]).eq(i).attr(mediaQuery[2]);
 
 
                     var media = new mediaSchema({
-                        user_idM: user_id,
+                        user_idM: userID,
                         name: title,
                         rating: baseRatingHost(host, rating),
-                        typeMul: hostData.typeMedia,
+                        typeMul: typeMedia,
                     });
 
                 
@@ -122,14 +120,12 @@ export async function fetchData(domino, urlWeb, fileRoute, user_id, hostData, pa
                 }
 
                 
-                fs.unlink('./src/tmp/'+urlHost(urlWeb) + '_' + user_id + '_' + page + '.html', (error) => {
+                /*fs.unlink(fileRoute, (error) => {
                     if (error) {
                         console.error('Error al eliminar el archivo:', error);
                     }
-                    console.log('El archivo ha sido eliminado exitosamente.');
-                });
+                });*/
 
-                page++;
                 
             });
 

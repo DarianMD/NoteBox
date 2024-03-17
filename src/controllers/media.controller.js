@@ -14,13 +14,10 @@ export const postmedia = (req, res) => {
     let dominio = urlF.parse(url, true);
     let httpUrl;
 
-
     const hostInput = {
-        dominio: urlF.parse(url, true),
         hostname: media.urlHost(dominio.href),
         httpUrl: null,
         userID: null,
-        hostData: null,
         page: null,
         titleAtribute: null,
         ratingAtribute: null,
@@ -28,8 +25,6 @@ export const postmedia = (req, res) => {
         type: null
     }
 
-
-    console.log(hostInput);
 
   
     switch (hostInput.hostname){
@@ -40,10 +35,13 @@ export const postmedia = (req, res) => {
             else{
             hostInput.page = hostInput.dominio.query.p;
             }
-            hostInput.userID = dominio.query.user_id;
-            httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ hostInput.page
 
+            hostInput.userID = dominio.query.user_id;
+            hostInput.httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ hostInput.page
             hostInput.type = media.HOST_ENUM.filmaffinity.typeMedia
+            hostInput.titleAtribute = media.HOST_ENUM.filmaffinity.titleAtribute;
+            hostInput.ratingAtribute = media.HOST_ENUM.filmaffinity.ratingAtribute;
+
             break;
         case media.HOST_ENUM.imdb.hostname:
             dominio.pathname = dominio.pathname.replace('ratings','');
@@ -58,12 +56,16 @@ export const postmedia = (req, res) => {
     }
 
     hostInput.fileRoute = ('./src/tmp/'+media.urlHost(url) + '_' + hostInput.userID + '_' + hostInput.page + '.html');
-    console.log(hostInput);
+
+    let final;
+    for(let i = 0; i < 1; i++){
+        hostInput.page++;
+        hostInput.httpUrl = 'https://www.filmaffinity.com/es/userratings.php?user_id='+ dominio.query.user_id+'&p='+ hostInput.page
+        final = media.fetchData(hostInput.hostname,hostInput.httpUrl, hostInput.fileRoute, hostInput.titleAtribute, hostInput.ratingAtribute, hostInput.userID, hostInput.type);
+    }
 
 
 
-
-    //media.fetchData(dominio, httpUrl, fileRoute, user_id, hostData, page, null);
     
 
 
